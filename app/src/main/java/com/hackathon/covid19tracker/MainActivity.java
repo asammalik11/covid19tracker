@@ -11,26 +11,41 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
+
+    final String docMain = "25373421b734d8865465ed063a369bf5";  // the doc will be used to store device names
 
     ListView listView;
     ArrayAdapter<String> arrayAdapter;
     ArrayList<String> listItems = new ArrayList<String>();
-    int clickCounter=0;
+    int clickCounter = 0;
 
     BluetoothAdapter bluetoothAdapter;
     private static final String TAG = "MainActivity";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,19 +59,18 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 // ListView Clicked item index
-                int itemPosition     = position;
+                int itemPosition = position;
 
                 // ListView Clicked item value
-                String  itemValue    = (String) listView.getItemAtPosition(position);
+                String itemValue = (String) listView.getItemAtPosition(position);
 
                 // Show Alert
                 Toast.makeText(getApplicationContext(),
-                        "Device Name : Bluetooth Address \n"+itemValue , Toast.LENGTH_SHORT)
+                        "Device Name : Bluetooth Address \n" + itemValue, Toast.LENGTH_SHORT)
                         .show();
             }
         });
         listView.setAdapter(arrayAdapter);
-
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
@@ -75,8 +89,8 @@ public class MainActivity extends AppCompatActivity {
             final String action = intent.getAction();
             Log.d(TAG, "onReceive: ACTION FOUND.");
 
-            if (action.equals(BluetoothDevice.ACTION_FOUND)){
-                BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
+            if (action.equals(BluetoothDevice.ACTION_FOUND)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Log.d(TAG, "onReceive: " + device.getName() + " : " + device.getAddress());
 
                 listItems.add(device.getName() + ": " + device.getAddress());
@@ -88,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
     // searching for unpaired devices
     public void searchDevices(View view) {
 
-        if(bluetoothAdapter == null){
+        if (bluetoothAdapter == null) {
             // Show Alert
             Toast.makeText(getApplicationContext(),
-                    "Bluetooth not supported" , Toast.LENGTH_LONG)
+                    "Bluetooth not supported", Toast.LENGTH_LONG)
                     .show();
 
             return;
@@ -99,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Show Alert
         Toast.makeText(getApplicationContext(),
-                "Searching" , Toast.LENGTH_LONG)
+                "Searching", Toast.LENGTH_LONG)
                 .show();
 
         listItems.clear();
@@ -108,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Searching for unpaired devices");
 
 
-        if(bluetoothAdapter.isDiscovering()){
+        if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
             Log.d(TAG, "Canceling discovery.");
 
@@ -119,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             registerReceiver(mBroadcastReceiver, discoverDevicesIntent);
         }
-        if(!bluetoothAdapter.isDiscovering()){
+        if (!bluetoothAdapter.isDiscovering()) {
 
             //check BT permissions in manifest
             checkBTPermissions();
@@ -133,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Only required for API 23+
     private void checkBTPermissions() {
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
             permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
             if (permissionCheck != 0) {
@@ -142,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+
 
 
 }
