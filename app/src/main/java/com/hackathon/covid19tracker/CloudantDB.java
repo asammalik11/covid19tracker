@@ -2,6 +2,7 @@ package com.hackathon.covid19tracker;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
@@ -38,6 +39,7 @@ public class CloudantDB {
             public void onSuccess(String result) {
                 try {
                     JSONObject jsonDB = new JSONObject(result);
+                    Log.d("pulled json", jsonDB.toString());
                     // adding id and rev to db
                     jsonDB.put("_id", docId);
                     jsonDB.put("_rev", "");
@@ -48,7 +50,7 @@ public class CloudantDB {
                     JSONArray deviceJson = new JSONArray();
                     deviceJson.put(notif);
 
-                    jsonDB.put(android.os.Build.MODEL, deviceJson);
+                    jsonDB.put(Build.MANUFACTURER + "-" + Build.MODEL, deviceJson);
                     storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -165,6 +167,16 @@ public class CloudantDB {
                 Log.d("_rev", "" + throwable);
             }
         });
+    }
+
+    public String getDeviceName() {
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+        if (model.startsWith(manufacturer)) {
+            return model;
+        } else {
+            return manufacturer + " " + model;
+        }
     }
 
 }
