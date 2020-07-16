@@ -3,9 +3,14 @@ package com.hackathon.covid19tracker;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class CheckPopup extends Activity {
     private Object VolleyCallback;
@@ -21,9 +26,9 @@ public class CheckPopup extends Activity {
         int width = dm.widthPixels;
         int height = dm.heightPixels;
         getWindow().setLayout( (int) (width * .7 ),  (int) (height * .5) );
-
-       // CloudantDB.getRemoteDB(getApplicationContext(), MainActivity.docMain, VolleyCallback);
         int notify = 1;
+
+
 
         TextView status = (TextView) findViewById (R.id.selfstatus);
         if (notify == 1) {

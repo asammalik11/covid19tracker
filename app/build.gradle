@@ -39,9 +39,6 @@ dependencies {
     implementation 'com.mcxiaoke.volley:library:1.0.19'
     implementation 'com.sromku:simple-storage:1.2.0'
 
-    implementation 'com.google.firebase:firebase-messaging:17.5.0'
-
 }
 
-apply plugin: 'com.google.gms.google-services'
 
