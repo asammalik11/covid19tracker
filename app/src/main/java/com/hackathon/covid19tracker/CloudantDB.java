@@ -12,7 +12,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.sromku.simple.storage.SimpleStorage;
+import com.sromku.simple.storage.Storage;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,19 +29,49 @@ public class CloudantDB {
     final static String user = "8cf59af7-656d-4673-84b6-fa4a5ec0052e-bluemix";
     final static String pass = "043cf093460d2ca584de5c500efb8617bdf99bfa7ea1ea461985167bbda898ac";
 
-    public static void getDB(Context c, String docId, final VolleyCallback callback) {
+    static Storage storage;
+
+    public static void initDB(Context c, String docId) {
+        storage = SimpleStorage.getInternalStorage(c);
+        JSONObject jsonDB = new JSONObject();
+        try {
+            jsonDB.put("_id", docId);
+            jsonDB.put("_rev", "");
+            JSONArray deviceJson = new JSONArray();
+            jsonDB.put(android.os.Build.MODEL, deviceJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        storage.createFile("files", "main.json", jsonDB.toString());
+        postToRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                Log.d("Success", result);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("Success", "" + throwable);
+            }
+        });
+    }
+
+    // Get the latest remote db
+    public static void getRemoteDB(Context c, String docId, final VolleyCallback callback) {
         final RequestQueue requestQueue = Volley.newRequestQueue(c);
-        String url = cloudantURL +  "/" + dbName + "/" + docId;
+        String url = cloudantURL + "/" + dbName + "/" + docId;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, (JSONObject) null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 callback.onSuccess(response.toString());
             }
+
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 callback.onError(error);
             }
+
         }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -49,48 +82,56 @@ public class CloudantDB {
                 headers.put("Authorization", auth);
                 return headers;
             }
-
         };
         requestQueue.getCache().clear();
         requestQueue.add(request);
     }
 
-    public static void postToDB(Context c, String docId, String revNumber, HashMap<String, Object> postMap, final VolleyCallback callback) {
+    // Post latest local db to remote
+    public static void postToRemoteDB(Context c, final String docId, final VolleyCallback callback) {
         final RequestQueue requestQueue = Volley.newRequestQueue(c);
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        String url = cloudantURL +  "/" + dbName;
-        //map.put("_id", doc);
-        map.put("_id", docId);
-        map.put("_rev", revNumber);
-        map.putAll(postMap);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(postMap), new Response.Listener<JSONObject>() {
+        final String url = cloudantURL + "/" + dbName;
+        getLatestRevisionNumber(c, docId, new RevisionNumberListener() {
             @Override
-            public void onResponse(JSONObject response) {
-                callback.onSuccess(response.toString());
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                callback.onError(error);
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                String credentials = user + ":" + pass;
-                String auth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                headers.put("Authorization", auth);
-                return headers;
-            }
+            public void onRevisionNumberReceived(String revNum) {
+                try {
+                    String stringDB = storage.readTextFile("files", "main.json");
+                    JSONObject jsonDB = new JSONObject(stringDB);
+                    jsonDB.put("_rev", revNum);
+                    JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, jsonDB, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            callback.onSuccess(response.toString());
+                        }
 
-        };
-        requestQueue.getCache().clear();
-        requestQueue.add(request);
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            callback.onError(error);
+                        }
+
+                    }) {
+                        @Override
+                        public Map<String, String> getHeaders() throws AuthFailureError {
+                            Map<String, String> headers = new HashMap<>();
+                            String credentials = user + ":" + pass;
+                            String auth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+                            headers.put("Content-Type", "application/json; charset=utf-8");
+                            headers.put("Authorization", auth);
+                            return headers;
+                        }
+                    };
+                    requestQueue.getCache().clear();
+                    requestQueue.add(request);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public static void getLatestRevisionNumber(Context c, String docId, final RevisionNumberListener revisionNumberListener) {
-        getDB(c, docId, new VolleyCallback() {
+        getRemoteDB(c, docId, new VolleyCallback() {
             @Override
             public void onSuccess(String result) {
                 try {
@@ -104,7 +145,7 @@ public class CloudantDB {
 
             @Override
             public void onError(Throwable throwable) {
-                Log.d("REV", "" + throwable);
+                Log.d("_rev", "" + throwable);
             }
         });
     }
