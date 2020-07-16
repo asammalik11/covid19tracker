@@ -28,9 +28,27 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.JsonObject;
+import com.sromku.simple.storage.SimpleStorage;
+import com.sromku.simple.storage.Storage;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         listView = (ListView) findViewById(R.id.dView);
+
+        // Create local json database
+        CloudantDB.initDB(getApplicationContext(), docMain);
+
         arrayAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, listItems);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -73,6 +95,44 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(arrayAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        
+    }
+
+    public void writeToInternalJson(JSONObject obj) {
+        File dir = new File(getApplicationContext().getFilesDir(), "files");
+        if(!dir.exists()){
+            dir.mkdir();
+        }
+        try {
+            File mainJson = new File(dir, "main.json");
+            FileWriter writer = new FileWriter(mainJson);
+            writer.append(obj.toString());
+            writer.flush();
+            writer.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public String read_file() {
+        String path = getApplicationContext().getFilesDir() + "/" + "main.Json";
+        try {
+            FileInputStream fis = getApplicationContext().openFileInput("main.json");
+            InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
+        } catch (FileNotFoundException e) {
+            return "";
+        } catch (UnsupportedEncodingException e) {
+            return "";
+        } catch (IOException e) {
+            return "";
+        }
     }
 
     @Override
@@ -156,8 +216,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-
 
 
 }
