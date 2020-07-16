@@ -49,7 +49,6 @@ public class CloudantDB {
                     // adding device json array
                     JSONArray deviceJson = new JSONArray();
                     deviceJson.put(notif);
-
                     jsonDB.put(bluetoothAddress, deviceJson);
                     storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
@@ -75,7 +74,7 @@ public class CloudantDB {
         });
     }
 
-    public static void updateBluetoothList(Context c, final String docId, final String bluetoothAddress, final ArrayList<String> bluetoothList) {
+    public static void updateBluetoothList(Context c, final String docId, final String bluetoothAddress, final String bluetoothString) {
         storage = SimpleStorage.getInternalStorage(c);
         getRemoteDB(c, docId, new VolleyCallback() {
             @Override
@@ -84,7 +83,7 @@ public class CloudantDB {
                     JSONObject jsonDB = new JSONObject(result);
                     // update device json array
                     JSONArray deviceJson = jsonDB.getJSONArray(bluetoothAddress);
-                    deviceJson.put(bluetoothList);
+                    deviceJson.put(bluetoothString);
                     jsonDB.put(bluetoothAddress, deviceJson);
                     storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
