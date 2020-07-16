@@ -86,8 +86,8 @@ public class CloudantDB {
                     if (!bluetoothStringExists(deviceJson, bluetoothString)) {
                         deviceJson.put(bluetoothString);
                         jsonDB.put(bluetoothAddress, deviceJson);
+                        storage.createFile("files", "main.json", jsonDB.toString());
                     }
-                    storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
