@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +40,6 @@ public class CloudantDB {
             public void onSuccess(String result) {
                 try {
                     JSONObject jsonDB = new JSONObject(result);
-                    Log.d("pulled json", jsonDB.toString());
                     // adding id and rev to db
                     jsonDB.put("_id", docId);
                     jsonDB.put("_rev", "");
@@ -50,6 +50,41 @@ public class CloudantDB {
                     JSONArray deviceJson = new JSONArray();
                     deviceJson.put(notif);
 
+                    jsonDB.put(bluetoothAddress, deviceJson);
+                    storage.createFile("files", "main.json", jsonDB.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("_rev", "" + throwable);
+            }
+        });
+        postToRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                Log.d("Success", result);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("Success", "" + throwable);
+            }
+        });
+    }
+
+    public static void updateBluetoothList(Context c, final String docId, final String bluetoothAddress, final ArrayList<String> bluetoothList) {
+        storage = SimpleStorage.getInternalStorage(c);
+        getRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONObject jsonDB = new JSONObject(result);
+                    // update device json array
+                    JSONArray deviceJson = jsonDB.getJSONArray(bluetoothAddress);
+                    deviceJson.put(bluetoothList);
                     jsonDB.put(bluetoothAddress, deviceJson);
                     storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
@@ -168,15 +203,4 @@ public class CloudantDB {
             }
         });
     }
-
-    public String getDeviceName() {
-        String manufacturer = Build.MANUFACTURER;
-        String model = Build.MODEL;
-        if (model.startsWith(manufacturer)) {
-            return model;
-        } else {
-            return manufacturer + " " + model;
-        }
-    }
-
 }
