@@ -83,8 +83,10 @@ public class CloudantDB {
                     JSONObject jsonDB = new JSONObject(result);
                     // update device json array
                     JSONArray deviceJson = jsonDB.getJSONArray(bluetoothAddress);
-                    deviceJson.put(bluetoothString);
-                    jsonDB.put(bluetoothAddress, deviceJson);
+                    if (!bluetoothStringExists(deviceJson, bluetoothString)) {
+                        deviceJson.put(bluetoothString);
+                        jsonDB.put(bluetoothAddress, deviceJson);
+                    }
                     storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -107,6 +109,22 @@ public class CloudantDB {
                 Log.d("Success", "" + throwable);
             }
         });
+    }
+
+    public static boolean bluetoothStringExists(JSONArray deviceJson, String bluetoothString) {
+        boolean isDuplicate = false;
+        for (int i = 0 ; i < deviceJson.length(); i++) {
+            try {
+                String entry = deviceJson.getJSONObject(i).toString();
+                if (bluetoothString.equals(entry)) {
+                    isDuplicate = true;
+                    break;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return isDuplicate;
     }
 
     // Get the latest remote db
