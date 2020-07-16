@@ -74,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
 
     String bluetoothAddress;
 
+    static Storage storage;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,6 +115,28 @@ public class MainActivity extends AppCompatActivity {
 
         configureNotify();
         configureCheckSelf();
+        storage = SimpleStorage.getInternalStorage(getApplicationContext());
+
+        if (storage.isFileExist("files", "setup.json")){
+            try{
+                String stringSetup = storage.readTextFile("files", "setup.json");
+                JSONObject jsonSetup = new JSONObject(stringSetup);
+                bluetoothAddress = jsonSetup.getString("address");
+
+                CloudantDB.initDB(getApplicationContext(), docMain, bluetoothAddress);
+
+
+                buttonRefresh.setEnabled(true);
+                buttonSubmit.setEnabled(false);
+                bAddress.setVisibility(View.GONE);
+                buttonSubmit.setVisibility(View.GONE);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
     }
 
 
@@ -135,6 +160,8 @@ public class MainActivity extends AppCompatActivity {
 
                 listItems.add(device.getAddress());
                 arrayAdapter.notifyDataSetChanged();
+
+                CloudantDB.updateBluetoothList(getApplicationContext(), docMain, bluetoothAddress, device.getAddress());
             }
         }
     };
@@ -227,6 +254,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void submitMAC(View v){
+
+        buttonSubmit.setEnabled(false);
+        bAddress.setVisibility(View.GONE);
+        buttonSubmit.setVisibility(View.GONE);
+
         buttonRefresh.setEnabled(true);
         buttonRefresh.performClick();
         Log.i(TAG, "address: " + bAddress.getText());
@@ -236,6 +268,13 @@ public class MainActivity extends AppCompatActivity {
         // Create local json database
         CloudantDB.initDB(getApplicationContext(), docMain, bluetoothAddress);
 
+        try{
+            JSONObject jsonSetup = new JSONObject();
+            jsonSetup.put("address", bluetoothAddress);
+            storage.createFile("files", "setup.json", jsonSetup.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 

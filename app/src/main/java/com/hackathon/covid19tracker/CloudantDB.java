@@ -2,6 +2,7 @@ package com.hackathon.covid19tracker;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.nfc.Tag;
 import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
@@ -83,6 +84,7 @@ public class CloudantDB {
                     JSONObject jsonDB = new JSONObject(result);
                     // update device json array
                     JSONArray deviceJson = jsonDB.getJSONArray(bluetoothAddress);
+                    Log.i("test", deviceJson.toString());
                     if (!bluetoothStringExists(deviceJson, bluetoothString)) {
                         deviceJson.put(bluetoothString);
                         jsonDB.put(bluetoothAddress, deviceJson);
