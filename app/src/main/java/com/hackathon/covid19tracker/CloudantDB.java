@@ -31,18 +31,35 @@ public class CloudantDB {
 
     static Storage storage;
 
-    public static void initDB(Context c, String docId) {
+    public static void initDB(Context c, final String docId) {
         storage = SimpleStorage.getInternalStorage(c);
-        JSONObject jsonDB = new JSONObject();
-        try {
-            jsonDB.put("_id", docId);
-            jsonDB.put("_rev", "");
-            JSONArray deviceJson = new JSONArray();
-            jsonDB.put(android.os.Build.MODEL, deviceJson);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        storage.createFile("files", "main.json", jsonDB.toString());
+        getRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONObject jsonDB = new JSONObject(result);
+                    // adding id and rev to db
+                    jsonDB.put("_id", docId);
+                    jsonDB.put("_rev", "");
+                    // adding notif parameter
+                    JSONObject notif = new JSONObject();
+                    notif.put("notify", 0);
+                    // adding device json array
+                    JSONArray deviceJson = new JSONArray();
+                    deviceJson.put(notif);
+
+                    jsonDB.put(android.os.Build.MODEL, deviceJson);
+                    storage.createFile("files", "main.json", jsonDB.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("_rev", "" + throwable);
+            }
+        });
         postToRemoteDB(c, docId, new VolleyCallback() {
             @Override
             public void onSuccess(String result) {

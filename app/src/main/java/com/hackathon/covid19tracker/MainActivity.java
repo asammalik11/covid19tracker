@@ -95,44 +95,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(arrayAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        
-    }
 
-    public void writeToInternalJson(JSONObject obj) {
-        File dir = new File(getApplicationContext().getFilesDir(), "files");
-        if(!dir.exists()){
-            dir.mkdir();
-        }
-        try {
-            File mainJson = new File(dir, "main.json");
-            FileWriter writer = new FileWriter(mainJson);
-            writer.append(obj.toString());
-            writer.flush();
-            writer.close();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public String read_file() {
-        String path = getApplicationContext().getFilesDir() + "/" + "main.Json";
-        try {
-            FileInputStream fis = getApplicationContext().openFileInput("main.json");
-            InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            return sb.toString();
-        } catch (FileNotFoundException e) {
-            return "";
-        } catch (UnsupportedEncodingException e) {
-            return "";
-        } catch (IOException e) {
-            return "";
-        }
     }
 
     @Override
