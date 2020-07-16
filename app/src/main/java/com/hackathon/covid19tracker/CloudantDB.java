@@ -32,7 +32,7 @@ public class CloudantDB {
 
     static Storage storage;
 
-    public static void initDB(Context c, final String docId) {
+    public static void initDB(Context c, final String docId, final String bluetoothAddress) {
         storage = SimpleStorage.getInternalStorage(c);
         getRemoteDB(c, docId, new VolleyCallback() {
             @Override
@@ -50,7 +50,7 @@ public class CloudantDB {
                     JSONArray deviceJson = new JSONArray();
                     deviceJson.put(notif);
 
-                    jsonDB.put(Build.MANUFACTURER + "-" + Build.MODEL, deviceJson);
+                    jsonDB.put(bluetoothAddress, deviceJson);
                     storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();

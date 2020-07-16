@@ -80,9 +80,6 @@ public class MainActivity extends AppCompatActivity {
         buttonSubmit = (Button) findViewById(R.id.buttonSubmit);
         bAddress = (TextView) findViewById(R.id.bAddress);
 
-        // Create local json database
-        CloudantDB.initDB(getApplicationContext(), docMain);
-
         arrayAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, listItems);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -201,6 +198,9 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "address: " + bAddress.getText());
 
         bluetoothAddress = (String) bAddress.getText().toString();
+
+        // Create local json database
+        CloudantDB.initDB(getApplicationContext(), docMain, bluetoothAddress);
     }
 
 
