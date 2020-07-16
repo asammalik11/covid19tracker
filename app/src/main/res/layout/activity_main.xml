@@ -98,20 +98,5 @@
         app:layout_constraintTop_toBottomOf="@+id/dView"
         app:layout_constraintVertical_bias="0.566" />
 
-    <Button
-        android:id="@+id/Check"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:text="Check Status"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/buttonRefresh"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dView"
-        app:layout_constraintVertical_bias="0.796" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

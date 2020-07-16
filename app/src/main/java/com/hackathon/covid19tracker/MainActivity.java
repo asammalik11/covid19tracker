@@ -111,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        configureNotify();
-        configureCheckSelf();
         storage = SimpleStorage.getInternalStorage(getApplicationContext());
 
         if (storage.isFileExist("files", "setup.json")){
@@ -133,8 +131,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
-
+        configureNotify();
     }
 
 
@@ -225,24 +222,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void configureNotify() {
+    public void configureNotify() {
         Button notifyButton = (Button) findViewById(R.id.Notify);
         notifyButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, Notify.class));
-            }
-        });
-    }
+                ArrayList<String> notifyList = new ArrayList<String>();
+                notifyList.add("");
 
-    private void configureCheckSelf() {
-        Button notifyButton = (Button) findViewById(R.id.Check);
-        notifyButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, CheckPopup.class));
+                CloudantDB.notifyUsers(getApplicationContext(), docMain, bluetoothAddress, "test2");
+                CloudantDB.notifyUsers(getApplicationContext(), docMain, bluetoothAddress, "tt");
             }
         });
     }

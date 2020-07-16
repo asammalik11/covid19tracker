@@ -113,6 +113,44 @@ public class CloudantDB {
         });
     }
 
+    public static void notifyUsers(Context c, final String docId, final String bluetoothAddress, final String user) {
+        storage = SimpleStorage.getInternalStorage(c);
+        getRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONObject jsonDB = new JSONObject(result);
+                    if (jsonDB.has(user)) {
+                        JSONArray deviceJson = jsonDB.getJSONArray(user);
+                        JSONObject notif = new JSONObject();
+                        notif.put("notify", 1);
+                        deviceJson.put(notif);
+                        jsonDB.put(user, deviceJson);
+                        storage.createFile("files", "main.json", jsonDB.toString());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("_rev", "" + throwable);
+            }
+        });
+        postToRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                Log.d("Success", result);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("Success", "" + throwable);
+            }
+        });
+    }
+
     public static boolean bluetoothStringExists(JSONArray deviceJson, String bluetoothString) {
         boolean isDuplicate = false;
         for (int i = 0 ; i < deviceJson.length(); i++) {
