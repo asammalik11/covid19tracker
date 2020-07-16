@@ -51,6 +51,7 @@ public class CloudantDB {
                     JSONArray deviceJson = new JSONArray();
                     deviceJson.put(notif);
                     jsonDB.put(bluetoothAddress, deviceJson);
+                    storage.deleteFile("files", "main.json");
                     storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -84,12 +85,10 @@ public class CloudantDB {
                     JSONObject jsonDB = new JSONObject(result);
                     // update device json array
                     JSONArray deviceJson = jsonDB.getJSONArray(bluetoothAddress);
-                    Log.i("test", deviceJson.toString());
-                    if (!bluetoothStringExists(deviceJson, bluetoothString)) {
-                        deviceJson.put(bluetoothString);
-                        jsonDB.put(bluetoothAddress, deviceJson);
-                        storage.createFile("files", "main.json", jsonDB.toString());
-                    }
+                    deviceJson.put(bluetoothString);
+                    jsonDB.put(bluetoothAddress, deviceJson);
+                    storage.deleteFile("files", "main.json");
+                    storage.createFile("files", "main.json", jsonDB.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

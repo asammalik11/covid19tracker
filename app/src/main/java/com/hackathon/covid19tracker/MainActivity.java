@@ -231,8 +231,7 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<String> notifyList = new ArrayList<String>();
                 notifyList.add("");
 
-                CloudantDB.notifyUsers(getApplicationContext(), docMain, bluetoothAddress, "test2");
-                CloudantDB.notifyUsers(getApplicationContext(), docMain, bluetoothAddress, "tt");
+                CloudantDB.notifyUsers(getApplicationContext(), docMain, bluetoothAddress, "testtt");
             }
         });
     }
