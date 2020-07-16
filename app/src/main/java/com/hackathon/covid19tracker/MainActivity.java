@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -64,10 +65,14 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     ArrayAdapter<String> arrayAdapter;
     ArrayList<String> listItems = new ArrayList<String>();
-    int clickCounter = 0;
 
     BluetoothAdapter bluetoothAdapter;
     private static final String TAG = "MainActivity";
+
+    Button buttonRefresh, buttonSubmit;
+    TextView bAddress;
+
+    String bluetoothAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,8 +84,9 @@ public class MainActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.dView);
 
-        // Create local json database
-        CloudantDB.initDB(getApplicationContext(), docMain);
+        buttonRefresh = (Button) findViewById(R.id.buttonRefresh);
+        buttonSubmit = (Button) findViewById(R.id.buttonSubmit);
+        bAddress = (TextView) findViewById(R.id.bAddress);
 
         arrayAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, listItems);
@@ -96,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Show Alert
                 Toast.makeText(getApplicationContext(),
-                        "Device Name : Bluetooth Address \n" + itemValue, Toast.LENGTH_SHORT)
+                        "Bluetooth Address \n" + itemValue, Toast.LENGTH_SHORT)
                         .show();
             }
         });
@@ -108,42 +114,6 @@ public class MainActivity extends AppCompatActivity {
         configureCheckSelf();
     }
 
-    public void writeToInternalJson(JSONObject obj) {
-        File dir = new File(getApplicationContext().getFilesDir(), "files");
-        if(!dir.exists()){
-            dir.mkdir();
-        }
-        try {
-            File mainJson = new File(dir, "main.json");
-            FileWriter writer = new FileWriter(mainJson);
-            writer.append(obj.toString());
-            writer.flush();
-            writer.close();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public String read_file() {
-        String path = getApplicationContext().getFilesDir() + "/" + "main.Json";
-        try {
-            FileInputStream fis = getApplicationContext().openFileInput("main.json");
-            InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            return sb.toString();
-        } catch (FileNotFoundException e) {
-            return "";
-        } catch (UnsupportedEncodingException e) {
-            return "";
-        } catch (IOException e) {
-            return "";
-        }
-    }
 
     @Override
     protected void onDestroy() {
@@ -163,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Log.d(TAG, "onReceive: " + device.getName() + " : " + device.getAddress());
 
-                listItems.add(device.getName() + ": " + device.getAddress());
+                listItems.add(device.getAddress());
                 arrayAdapter.notifyDataSetChanged();
             }
         }
@@ -181,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
 
             return;
         }
+
 
         // Show Alert
         Toast.makeText(getApplicationContext(),
@@ -249,6 +220,22 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, CheckPopup.class));
             }
         });
+    }
+
+    public void bSettings(View v) {
+        startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+    }
+
+    public void submitMAC(View v){
+        buttonRefresh.setEnabled(true);
+        buttonRefresh.performClick();
+        Log.i(TAG, "address: " + bAddress.getText());
+
+        bluetoothAddress = (String) bAddress.getText().toString();
+
+        // Create local json database
+        CloudantDB.initDB(getApplicationContext(), docMain, bluetoothAddress);
+
     }
 
 

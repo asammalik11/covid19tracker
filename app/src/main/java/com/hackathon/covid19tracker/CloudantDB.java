@@ -2,6 +2,7 @@ package com.hackathon.covid19tracker;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
@@ -19,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,18 +33,69 @@ public class CloudantDB {
 
     static Storage storage;
 
-    public static void initDB(Context c, String docId) {
+    public static void initDB(Context c, final String docId, final String bluetoothAddress) {
         storage = SimpleStorage.getInternalStorage(c);
-        JSONObject jsonDB = new JSONObject();
-        try {
-            jsonDB.put("_id", docId);
-            jsonDB.put("_rev", "");
-            JSONArray deviceJson = new JSONArray();
-            jsonDB.put(android.os.Build.MODEL, deviceJson);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        storage.createFile("files", "main.json", jsonDB.toString());
+        getRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONObject jsonDB = new JSONObject(result);
+                    // adding id and rev to db
+                    jsonDB.put("_id", docId);
+                    jsonDB.put("_rev", "");
+                    // adding notif parameter
+                    JSONObject notif = new JSONObject();
+                    notif.put("notify", 0);
+                    // adding device json array
+                    JSONArray deviceJson = new JSONArray();
+                    deviceJson.put(notif);
+                    jsonDB.put(bluetoothAddress, deviceJson);
+                    storage.createFile("files", "main.json", jsonDB.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("_rev", "" + throwable);
+            }
+        });
+        postToRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                Log.d("Success", result);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("Success", "" + throwable);
+            }
+        });
+    }
+
+    public static void updateBluetoothList(Context c, final String docId, final String bluetoothAddress, final String bluetoothString) {
+        storage = SimpleStorage.getInternalStorage(c);
+        getRemoteDB(c, docId, new VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+                try {
+                    JSONObject jsonDB = new JSONObject(result);
+                    // update device json array
+                    JSONArray deviceJson = jsonDB.getJSONArray(bluetoothAddress);
+                    deviceJson.put(bluetoothString);
+                    jsonDB.put(bluetoothAddress, deviceJson);
+                    storage.createFile("files", "main.json", jsonDB.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.d("_rev", "" + throwable);
+            }
+        });
         postToRemoteDB(c, docId, new VolleyCallback() {
             @Override
             public void onSuccess(String result) {
@@ -149,5 +202,4 @@ public class CloudantDB {
             }
         });
     }
-
 }
