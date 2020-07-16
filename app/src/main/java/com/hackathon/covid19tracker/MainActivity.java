@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -60,16 +61,24 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     ArrayAdapter<String> arrayAdapter;
     ArrayList<String> listItems = new ArrayList<String>();
-    int clickCounter = 0;
 
     BluetoothAdapter bluetoothAdapter;
     private static final String TAG = "MainActivity";
+
+    Button buttonRefresh, buttonSubmit;
+    TextView bAddress;
+
+    String bluetoothAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         listView = (ListView) findViewById(R.id.dView);
+
+        buttonRefresh = (Button) findViewById(R.id.buttonRefresh);
+        buttonSubmit = (Button) findViewById(R.id.buttonSubmit);
+        bAddress = (TextView) findViewById(R.id.bAddress);
 
         // Create local json database
         CloudantDB.initDB(getApplicationContext(), docMain);
@@ -88,13 +97,14 @@ public class MainActivity extends AppCompatActivity {
 
                 // Show Alert
                 Toast.makeText(getApplicationContext(),
-                        "Device Name : Bluetooth Address \n" + itemValue, Toast.LENGTH_SHORT)
+                        "Bluetooth Address \n" + itemValue, Toast.LENGTH_SHORT)
                         .show();
             }
         });
         listView.setAdapter(arrayAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
 
     }
 
@@ -116,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Log.d(TAG, "onReceive: " + device.getName() + " : " + device.getAddress());
 
-                listItems.add(device.getName() + ": " + device.getAddress());
+                listItems.add(device.getAddress());
                 arrayAdapter.notifyDataSetChanged();
             }
         }
@@ -133,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
             return;
         }
+
 
         // Show Alert
         Toast.makeText(getApplicationContext(),
@@ -178,6 +189,18 @@ public class MainActivity extends AppCompatActivity {
                 this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number
             }
         }
+    }
+
+    public void bSettings(View v){
+        startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+    }
+
+    public void submitMAC(View v){
+        buttonRefresh.setEnabled(true);
+        buttonRefresh.performClick();
+        Log.i(TAG, "address: " + bAddress.getText());
+
+        bluetoothAddress = (String) bAddress.getText().toString();
     }
 
 
