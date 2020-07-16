@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 public class MainActivity extends AppCompatActivity {
 
     final String docMain = "25373421b734d8865465ed063a369bf5";  // the doc will be used to store device names
@@ -51,6 +52,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d("TAG", "the current token:" + FirebaseInstanceId.getInstance().getToken());
+
+
         listView = (ListView) findViewById(R.id.dView);
         arrayAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, listItems);
@@ -73,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(arrayAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        configureNotify();
     }
 
     @Override
@@ -157,7 +164,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void configureNotify() {
+        Button notifyButton = (Button) findViewById(R.id.Notify);
+        notifyButton.setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, Notify.class));
+            }
+        });
+    }
 
 
 }
